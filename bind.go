@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/livekit/media-sdk/mixer"
 	"github.com/livekit/media-sdk/rtp"
 	lksdk "github.com/livekit/server-sdk-go/v2"
-	"github.com/livekit/sip/pkg/mixer"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
 )
@@ -85,9 +85,20 @@ func (r *Manager) BindRTPtoRoom(
 		return fmt.Errorf("failed to create local track: %w", err)
 	}
 
+	mix, err := mixer.NewMixer(
+		mediaWriter,
+		rtp.DefFrameDur,
+		&session.roomStats.Mixer,
+		channels,
+		mixer.DefaultInputBufferFrames,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create mixer: %w", err)
+	}
+
 	session.SetParams(
 		channels,
-		mixer.NewMixer(mediaWriter, time.Duration(pTime)*time.Millisecond, nil),
+		mix,
 		track,
 		rtpProvider,
 		streamRTP,
