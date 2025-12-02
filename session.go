@@ -5,12 +5,11 @@ import (
 
 	"github.com/livekit/media-sdk/mixer"
 	lksdk "github.com/livekit/server-sdk-go/v2"
-	"github.com/livekit/sip/pkg/sip"
 )
 
 type session struct {
 	room        *lksdk.Room
-	roomStats   *sip.RoomStats
+	stats       *mixer.Stats
 	mixer       *mixer.Mixer
 	track       *lksdk.LocalTrack
 	rtpProvider *rtpSampleProvider
@@ -22,9 +21,9 @@ type session struct {
 
 func newSession(room *lksdk.Room) *session {
 	return &session{
-		room:      room,
-		roomStats: &sip.RoomStats{},
-		channels:  1,
+		room:     room,
+		stats:    &mixer.Stats{},
+		channels: 1,
 	}
 }
 

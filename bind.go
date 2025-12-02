@@ -88,7 +88,7 @@ func (r *Manager) BindRTPtoRoom(
 	mix, err := mixer.NewMixer(
 		mediaWriter,
 		rtp.DefFrameDur,
-		&session.roomStats.Mixer,
+		session.stats,
 		channels,
 		mixer.DefaultInputBufferFrames,
 	)
