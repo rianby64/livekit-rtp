@@ -3,8 +3,8 @@ package rtp
 import (
 	"net"
 
-	"github.com/livekit/media-sdk/mixer"
 	lksdk "github.com/livekit/server-sdk-go/v2"
+	"github.com/livekit/sip/pkg/mixer"
 	"github.com/livekit/sip/pkg/sip"
 )
 

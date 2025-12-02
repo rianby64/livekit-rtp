@@ -6,7 +6,7 @@ require (
 	github.com/livekit/media-sdk v0.0.0-20251126100256-e9674e0bcb9e
 	github.com/livekit/protocol v1.43.2
 	github.com/livekit/server-sdk-go/v2 v2.13.0
-	github.com/livekit/sip v1.2.0
+	github.com/livekit/sip v1.1.0
 	github.com/pion/rtcp v1.2.16
 	github.com/pion/webrtc/v4 v4.1.6
 	gopkg.in/hraban/opus.v2 v2.0.0-20230925203106-0188a62cb302
@@ -39,7 +39,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/gotranspile/g722 v0.0.0-20240123003956-384a1bb16a19 // indirect
-	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/icholy/digest v1.1.0 // indirect
 	github.com/jfreymuth/oggvorbis v1.0.5 // indirect
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
