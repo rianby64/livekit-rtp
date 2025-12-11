@@ -7,9 +7,14 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/livekit/media-sdk/rtp"
 	"github.com/pion/rtcp"
+)
+
+const (
+	deadlineUDP = time.Minute
 )
 
 type streamRTP struct {
@@ -46,6 +51,16 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 		buff := make([]byte, inboundMTU)
 
 		for {
+			if err := udpConnRTCP.SetDeadline(time.Now().Add(deadlineUDP)); err != nil {
+				if errors.Is(err, net.ErrClosed) {
+					break
+				}
+
+				fmt.Printf("Error setting the deadline for UDP: %v\n", err)
+
+				continue
+			}
+
 			n, rAddr, err := udpConnRTCP.ReadFromUDP(buff)
 			if err != nil {
 				if errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
@@ -54,6 +69,7 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 					return
 				}
 
+				// close even if Deadline has been exceeded
 				fmt.Println("RTCP read error:", err)
 
 				return
@@ -82,7 +98,17 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 		defer close(c.rtpBuff)
 
 		for {
-			n, rAddr, err := c.connRTP.ReadFromUDP(c.buff)
+			if err := udpConnRTP.SetDeadline(time.Now().Add(deadlineUDP)); err != nil {
+				if errors.Is(err, net.ErrClosed) {
+					break
+				}
+
+				fmt.Printf("Error setting the deadline for UDP: %v\n", err)
+
+				continue
+			}
+
+			n, rAddr, err := udpConnRTP.ReadFromUDP(c.buff)
 			if err != nil {
 				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
 					fmt.Println("RTP connection closed, stopping read loop")
@@ -92,6 +118,7 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 
 				fmt.Printf("streamRTP: ReadRTP failed: %s\n", err)
 
+				// close even if Deadline has been exceeded
 				return
 			}
 
@@ -147,6 +174,7 @@ func (c *streamRTP) WriteRTP(h *rtp.Header, payload []byte) (int, error) {
 
 	n, err := c.connRTP.WriteTo(data, rAddr)
 	if err != nil {
+		// close even if Deadline has been exceeded
 		return n, fmt.Errorf("streamRTP: failed to write data: %w", err)
 	}
 
