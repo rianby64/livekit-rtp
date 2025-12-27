@@ -22,6 +22,7 @@ func (r *Manager) BindRTPtoRoom(
 	connRTP, connRTCP net.Conn,
 	sID, identity string,
 	payloadType byte, clockRate, channels, pTime int,
+	rAddrRTP, rAddrRTCP *net.UDPAddr,
 ) error {
 	fmt.Printf("BindRTPtoRoom %s: Started binding to session (identity: %s) payload:%d, clockRate:%d, channels:%d, pTime:%d\n",
 		sID, identity, payloadType, clockRate, channels, pTime)
@@ -42,6 +43,14 @@ func (r *Manager) BindRTPtoRoom(
 	}()
 
 	streamRTP := newStreamRTP(connRTP, connRTCP)
+
+	if rAddrRTP != nil {
+		streamRTP.SetRemoteAddrRTP(rAddrRTP)
+	}
+
+	if rAddrRTCP != nil {
+		streamRTP.SetRemoteAddrRTCP(rAddrRTCP)
+	}
 
 	mediaWriter, err := newMediaWriter(rtp.NewSeqWriter(streamRTP), payloadType, clockRate, channels, pTime)
 	if err != nil {
