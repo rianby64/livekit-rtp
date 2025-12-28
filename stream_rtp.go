@@ -34,6 +34,18 @@ type streamRTP struct {
 	rtpBuff chan rtp.Packet
 }
 
+func shouldExit(err error) bool {
+	if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
+		return true
+	}
+
+	if errNet, ok := err.(net.Error); ok && errNet.Timeout() {
+		return true
+	}
+
+	return false
+}
+
 func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 	udpConnRTP := connRTP.(*net.UDPConn)
 	udpConnRTCP := connRTCP.(*net.UDPConn)
@@ -52,8 +64,8 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 
 		for {
 			if err := udpConnRTCP.SetDeadline(time.Now().Add(deadlineUDP)); err != nil {
-				if errors.Is(err, net.ErrClosed) {
-					break
+				if shouldExit(err) {
+					return
 				}
 
 				fmt.Printf("Error setting the deadline for UDP: %v\n", err)
@@ -63,7 +75,7 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 
 			n, rAddr, err := udpConnRTCP.ReadFromUDP(buff)
 			if err != nil {
-				if errors.Is(err, net.ErrClosed) || errors.Is(err, io.EOF) {
+				if shouldExit(err) {
 					fmt.Printf("RTCP connection closed, stopping read loop\n")
 
 					return
@@ -99,8 +111,8 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 
 		for {
 			if err := udpConnRTP.SetDeadline(time.Now().Add(deadlineUDP)); err != nil {
-				if errors.Is(err, net.ErrClosed) {
-					break
+				if shouldExit(err) {
+					return
 				}
 
 				fmt.Printf("Error setting the deadline for UDP: %v\n", err)
@@ -110,7 +122,7 @@ func newStreamRTP(connRTP, connRTCP net.Conn) *streamRTP {
 
 			n, rAddr, err := udpConnRTP.ReadFromUDP(c.buff)
 			if err != nil {
-				if errors.Is(err, io.EOF) || errors.Is(err, net.ErrClosed) {
+				if shouldExit(err) {
 					fmt.Println("RTP connection closed, stopping read loop")
 
 					return
