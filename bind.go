@@ -97,9 +97,9 @@ func (r *Manager) BindRTPtoRoom(
 	mix, err := mixer.NewMixer(
 		mediaWriter,
 		rtp.DefFrameDur,
-		session.stats,
 		channels,
-		mixer.DefaultInputBufferFrames,
+		mixer.WithStats(session.stats),
+		mixer.WithInputBufferFrames(mixer.DefaultInputBufferFrames),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create mixer: %w", err)
